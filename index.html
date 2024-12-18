@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Demo: Add custom markers in Mapbox GL JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans"
+      rel="stylesheet"
+    />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+	  
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .marker {
+        background-image: url('https://docs.mapbox.com/help/demos/custom-markers-gl-js/mapbox-icon.png');
+        background-size: cover;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .mapboxgl-popup {
+        max-width: 200px;
+      }
+
+      .mapboxgl-popup-content {
+        text-align: center;
+        font-family: 'Open Sans', sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <p id="directions"></p> 
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoidGFubWFuaDA3MDciLCJhIjoiY200dHEwam4wMGRuNzJrb2JpNmtjdDBxcCJ9.IEg4b4hHFz0wnlIlxilhvw';
+const eraWidget = new EraWidget();
+let configLAT = null;
+let configLON = null;
+let configBUTTON = null;
+let configSPEED = null;
+
+let LAT = 10.8317826;  
+let LON = 106.6486423;  
+let SPEED = 0;  
+let BUTTON = 0;
+let lastPosition = null;
+
+var mapbox = null;
+var marker = null;
+
+window.onload = (event) => {
+  initMap();
+};
+
+eraWidget.init({
+  onConfiguration: (configuration) => {
+    // iFrame realtime configs
+    configLAT = configuration.realtime_configs[0];
+    configLON = configuration.realtime_configs[1];
+    configBUTTON = configuration.realtime_configs[2];
+    configSPEED = configuration.realtime_configs[3];
+  },
+
+  onValues: (values) => {
+    // To get value of sensor
+    if (configLAT && values[configLAT.id]) {
+        LAT = values[configLAT.id].value;
+        console.log("Value LAT:", LAT);
+    }
+    if (configLON && values[configLON.id]) {
+        LON = values[configLON.id].value;
+        console.log("Value LON:", LON);
+    }
+    if (configBUTTON && values[configBUTTON.id]) {
+        BUTTON = values[configBUTTON.id].value;
+        console.log("Value BUTTON:", BUTTON);
+    }
+    if (configSPEED && values[configSPEED.id]) {
+        SPEED = values[configSPEED.id].value;
+        console.log("Value SPEED:", SPEED);
+    }
+  },
+});
+
+function initMap() {
+  mapbox = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v11',
+    center: [LON, LAT],
+    zoom: 14
+  });
+
+  const el = document.createElement('div');
+  el.className = 'marker';
+
+  // make a marker for each feature and add it to the map
+  marker = new mapboxgl.Marker(el)
+    .setLngLat([LON, LAT])
+    .addTo(mapbox);
+
+  updateInterval = setInterval(updateMapCenter, 1000); // Update the map center every second
+}
+
+function updateMapCenter() {
+  if (LAT && LON) {
+    let lat = parseFloat(LAT);
+    let lon = parseFloat(LON);
+    const newCenter = { lat, lon };
+
+    mapbox.setCenter(newCenter);
+    marker.setLngLat(newCenter);
+  }
+}
+    </script>
+  </body>
+</html>
